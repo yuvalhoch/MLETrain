@@ -46,39 +46,3 @@ def read_possible_poses_from_file(pos_file):
     for line in lines:
         pos_list.append(line)
     return pos_list
-
-
-
-
-    # # Calculate the e equation = e(count(word, POS)/count(POS)) using given e_dic, q_dic
-    # def get_e_using_dic(word, tag, e_dic, q_dic):
-    #     count_word_pos = float(e_dic[word + " " + tag])
-    #     count_pos = float(q_dic[tag])
-    #     prob = count_word_pos / count_pos
-    #     return prob
-    #
-    # def get_q(pprev, prev, cur):
-    #     global q_dic
-    #     prob_2_pos = count_c = prob_1_pos = 0.0
-    #     count_abc = abc_seq_count(cur, pprev, prev)
-    #     # Calculate the probability of the [pprev prev cur] occurrence,
-    #     # by using the count(pprev, prev, cur).
-    #     prob_3_pos = prob_of_3_pos(count_abc, pprev, prev)
-    #     count_bc = bc_seq_count(cur, prev)
-    #     # If prev have seen in the corpus before.
-    #     if prev in q_dic.keys():
-    #         count_b = float(q_dic[prev])
-    #         # Calculate the probability of the [pprev prev] occurrence,
-    #         # by using the count(prev).
-    #         prob_2_pos = count_bc / count_b
-    #     # If cur have seen in the corpus before.
-    #     if cur in q_dic.keys():
-    #         count_c = float(q_dic[cur])
-    #     count_all_words = float(q_dic["NUM_WORDS"])     # Is the number of words in the corpus
-    #     # Calculate the probability of the [cur] occurrence,
-    #     # by using the count(cur)/count_all_words.
-    #     prob_1_pos = count_c / count_all_words
-    #     wight = [0.85, 0.1, 0.05]       # The lambda vector of wights.
-    #     q_values = [prob_3_pos, prob_2_pos, prob_1_pos]      # The three values of q equation.
-    #     # Return the interpolation of <wight, q_values>.
-    #     return np.sum(np.multiply(wight,q_values))
