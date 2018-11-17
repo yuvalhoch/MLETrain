@@ -3,6 +3,8 @@ import sys
 
 e_dic = {}
 q_dic = {}
+# Dictionary to count appearances of each part of speech (pos -> appearances)
+pos_count_dic = {}
 suffix_dic = {}
 word_signature = ['ing', 'ed', '\'s', 'n\'t', 'hood', 'ist', 'ness', 'able', 'ible',
                   'en', 'ic', 'ish', 'less', 'ly', 'tial', 'er']
@@ -14,6 +16,7 @@ def start():
     train_file = open("ass1-tagger-train")
     e_file = open("e_file.txt", "a")
     q_file = open("q_file.txt", "a")
+    pos_file = open("extra_file_name.txt", "a")  # file which contain all the possible POSes. each line contains a pos.
     ################################
     #train_file = open(sys.argv[1])
     #e_file = open(sys.argv[2], "a")
@@ -25,7 +28,18 @@ def start():
     train_file = open("ass1-tagger-train")
     create_q(train_file)
     write_to_q_file(q_file)
+
+    # write pos file...
+    write_pos_file(pos_file)
+
     train_file.close()
+
+
+# pos file is file which contain all the possible POSes. each line contains a pos.
+def write_pos_file(pos_file):
+    for pos in pos_count_dic.keys():
+        pos_file.write(pos + "\n")
+    pos_file.close()
 
 
 def write_to_e_file(e_file):
@@ -98,9 +112,7 @@ def add_entry_to_counter_dict(dic, entry):
 
 
 def create_e(train_file):
-    global e_dic, word_signature
-    # Dictionary to count appearances of each part of speech
-    pos_count_dic = {}
+    global e_dic, word_signature, pos_count_dic
 
     # A word-signature that mentions whether the first letter or the
     # whole word is in upper case.

@@ -1,4 +1,7 @@
 import MLETrain
+import sys
+import Utility
+import re
 
 """
 given word as x, tag1 and tag2 (tags of previous words)
@@ -9,10 +12,10 @@ pos_count_dic is count_dic which its keys represent the possible part of speeche
 """
 
 
-def greedy_tag_word(x, t1, t2, dic_e, dic_q, pos_count_dic):
+def greedy_tag_word(x, t1, t2, dic_e, dic_q, pos_list):
     t3 = "default"
     max_t3_prob = 0
-    for pos in pos_count_dic.keys():
+    for pos in pos_list:
         if pos in dic_e[x].keys():  # first check if the given word could be pos (if you've seen it before)
             e_x_given_t3 = MLETrain.get_e(x, pos, dic_e, pos_count_dic)
             q_t3_given_t1t2 = MLETrain.get_q(t1, t2, pos, dic_q)
@@ -23,3 +26,64 @@ def greedy_tag_word(x, t1, t2, dic_e, dic_q, pos_count_dic):
                 max_t3_prob = cur_pos_porb
                 t3 = pos
     return t3
+
+
+def main():
+    # arguments are: input_file_name, q.mle, e.mle, out_file_name, extra_file_name
+    inp_file = sys.argv[1]
+    q_mle_file = sys.argv[2]
+    e_mle_file = sys.argv[3]
+    out_file_name = sys.argv[4]
+    extra_file = sys.argv[5]
+
+    pos_list = Utility.read_possible_poses_from_file(extra_file)
+    dic_q = Utility.generate_q_dic_from_file(q_mle_file)
+    dic_e = Utility.generate_e_dic_from_file(e_mle_file)
+
+    out_file = open(out_file_name, "a")
+
+    # prev_tag = ""  # none
+    # pprev_tag = ""  # none
+    lines = inp_file.readlines()  # In order to go over the lines in input file.
+    for line in lines:
+        # in the begging of each sentence reset the prev and pprev tag to none
+        prev_tag = ""  # none
+        pprev_tag = ""  # none
+
+        # split the sentence
+        # re.split(MLETrain.punctuation_marks, line)...... # split....
+        # split() without removing the delimiter
+
+        # split line to words by any punctuation except "."
+        pattern_to_split = re.compile(r'(\s+|[{}])'.format(re.escape(r"""!"#$%&'()*+,-/:;<=>?@[\]^_`{|}~""")))
+        words = pattern_to_split.split(line)
+        for word in words:  # clean the " " from the words list
+            if word == " ":
+                words.remove(word)
+        # now we are free to work over words list
+
+        for i in range(words.__len__()):
+            cur_word_tag = greedy_tag_word(words[i], pprev_tag, prev_tag, dic_e, dic_q, pos_list)
+            if (i == words.__len__() - 1):  # if last word
+                # if its the last word, first split to word and . (if possible)
+                # then tag each of them and write to file. doesn't write the space at end of a line
+                pattern = re.compile(r'(\s+|[{}])'.format(re.escape(".")))
+                t = [part for part in pattern.split(words[i]) if part.strip()]
+                if t.__len__() == 2:  # if last word is: "word." write word/tag and ./tag
+                    t0_tag = greedy_tag_word(t[0], pprev_tag, prev_tag, dic_e, dic_q, pos_list)
+                    out_file.write(t[0] + "/" + t0_tag + " ")
+                    t1_tag = greedy_tag_word(t[1], prev_tag, t0_tag, dic_e, dic_q, pos_list)
+                    out_file.write(t[1] + "/" + t1_tag)
+                else:  # last word is regular word...
+                    out_file.write(t[0] + "/" + cur_word_tag)
+            else:  # regular word in sentence (not last)
+                out_file.write(words[i] + "/" + cur_word_tag + " ")
+
+            # update pprev and prev tag for next iteration...
+            pprev_tag = prev_tag
+            prev_tag = cur_word_tag
+
+    out_file.close()
+
+
+main()
