@@ -6,6 +6,7 @@ def generate_q_dic_from_file(q_file_path):
 
     lines = q_file.readlines()  # In order to go over the lines in q_file.
     for line in lines:
+        line = line.replace("\n", "")
         by_tab = line.split("\t")
         tags = by_tab[0]
         event_count = by_tab[1]
@@ -22,6 +23,7 @@ def generate_e_dic_from_file(e_file_path):
     lines = e_file.readlines()  # In order to go over the lines in e_file.
     # For every line in e_file, split the line word pos\t count_of_event by split('\t').
     for line in lines:
+        line = line.replace("\n", "")
         by_tab = line.split("\t")
         word_and_pos = by_tab[0]
         event_count = by_tab[1]
@@ -40,9 +42,11 @@ def generate_e_dic_from_file(e_file_path):
     return e_dic
 
 
-def read_possible_poses_from_file(pos_file):
+def read_possible_poses_from_file(pos_file_path):
     pos_list = []
+    pos_file = open(pos_file_path, "r")
     lines = pos_file.readlines()  # In order to go over the lines in pos_file.
     for line in lines:
+        line = line.replace("\n", "")
         pos_list.append(line)
     return pos_list
