@@ -298,33 +298,6 @@ def get_e(word, tag):
     return prob
 
 
-def number_format(word):
-    try:
-        # time format - 00:00
-        if len(word.split(':')) > 1:
-            word = float(word.split(':')[0])
-        # float format - 0.0
-        elif len(word.split(".")) > 1:
-            word = float(word.split(".")[0])
-        # 3-digits format - 1,000
-        elif len(word.split(",")) > 1:
-            word = float(word.split(",")[0])
-        # inch format - 1''
-        elif len(word.split("/'/'")) > 1:
-            word = float(word.split("/'/'")[0])
-        # range format - 1-2
-        elif len(word.split("-")) > 1:
-            word = float(word.split("-")[0])
-        # or format - 1/2
-        elif len(word.split("/")) > 1:
-            word = float(word.split("/")[0])
-        else:
-            word = float(word)
-        return True
-    except:
-        return False
-
-
 def find_word_signature(word):
     global word_signature
     # Check if this word have a special suffix and return it.
@@ -338,7 +311,7 @@ def find_word_signature(word):
     elif word[0].isupper():
         return '^Aa'
     # Check if the word is a number format.
-    elif number_format(word):
+    elif any(x.isdigit() for x in word):
         return 'CD'
     # Check if the word is a punctuation mark.
     elif word in punctuation_marks:
