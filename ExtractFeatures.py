@@ -1,18 +1,21 @@
 import sys
 
 
-def start():
-    corpus_file = open("ass1-tagger-train")
-    #corpus_file  = open(sys.argv[1])
-    features_file = open("features_file.txt", "a")
-    #features_file = open(sys.argv[2])
-    data, words_dic = extract_features(corpus_file)
+punctuation_marks = ['.', ',', '"', '``', '(', ')', '=', '-', '!', '@', '#', '?',
+                     '$', '%', '&', '*', '+', '{', '}', '\'\'', ':', '...', ';', '--']
 
+def start():
+    corpus_file  = open(sys.argv[1])
+    features_file = open(sys.argv[2], "a")
+    data, words_dic = extract_features(corpus_file)
     for words, pos in data:
         for i, word in enumerate(words):
             features_list = create_features_list(words, pos, word, i, words_dic[word])
             features_string = " ".join([feature for feature in features_list])
-            features_file.write(pos[i] + " " + features_string + "\n")
+            if len(pos) == 0:
+                features_file.write(features_string + "\n")
+            else:
+                features_file.write(pos[i] + " " + features_string + "\n")
     corpus_file.close()
     features_file.close()
 
@@ -31,22 +34,35 @@ def extract_features(corpus_file):
         for pair in pairs:
             by_slash = pair.split("/")
             word = by_slash[0]
-            pos_ = by_slash[1]
-            if not pos_.isupper():
-                break
-            # Words is a array of the all file words, and pos is a array of all the POS.
-            words.append(word)
-            pos.append(pos_)
-            # If the word is in words dictionary, add 1 to the number of appearances
-            # of that word, else - create a new entry with the number 1.
-            if word in words_dic.keys():
-                words_dic[word] += 1
+            if len(by_slash) == 2:
+                pos_ = by_slash[1]
+                if (not pos_.isupper()) and pos not in punctuation_marks:
+                    break
+                # Words is a array of the all file words, and pos is a array of all the POS.
+                pos.append(pos_)
+                words.append(word)
+                add_to_words_dic(word, words_dic)
+                # If the word is in words dictionary, add 1 to the number of appearances
+                # of that word, else - create a new entry with the number 1.
+            elif len(by_slash) > 2:
+                for i in range(len(by_slash) - 1):
+                    pos.append(by_slash[-1])
+                    words.append(by_slash[i])
+                    add_to_words_dic(by_slash[i], words_dic)
             else:
-                words_dic[word] = 1
+                words.append(word)
+                add_to_words_dic(word, words_dic)
         # Append to data the pair of words and POS for every line in the corpus.
         data.append((words, pos))
     corpus_file.close()
     return data, words_dic
+
+
+def add_to_words_dic(word, words_dic):
+    if word in words_dic.keys():
+        words_dic[word] += 1
+    else:
+        words_dic[word] = 1
 
 
 def create_features_list(words, pos, cur, i, rar_word):
@@ -54,17 +70,17 @@ def create_features_list(words, pos, cur, i, rar_word):
     # The feature is form=word
     form = "form=" + cur
     features_list.append(form)
+    if len(pos) != 0:
+        # The feature is prev_tag=prev_POS
+        prev_tag = "prev_tag=" + (pos[i - 1] if i != 0 else 'start')
+        features_list.append(prev_tag)
 
-    # The feature is prev_tag=prev_POS
-    prev_tag = "prev_tag=" + (pos[i - 1] if i != 0 else 'start')
-    features_list.append(prev_tag)
-
-    # The feature is prev_prev_tag=prev_prev_POS
-    if i > 1:
-        pprev_tag = "pprev_tag=" + pos[i - 1] + "+" + pos[i - 2]
-    else:
-        pprev_tag = "pprev_tag=start+prev_tag=" + (pos[i - 1] if i == 1 else 'start')
-    features_list.append(pprev_tag)
+        # The feature is prev_prev_tag=prev_prev_POS
+        if i > 1:
+            pprev_tag = "pprev_tag=" + pos[i - 1] + "+" + pos[i - 2]
+        else:
+            pprev_tag = "pprev_tag=start+prev_tag=" + (pos[i - 1] if i == 1 else 'start')
+        features_list.append(pprev_tag)
 
     # The feature is prev_word
     prev_word = "prev_word=" + (words[i - 1] if i > 0 else 'start')
@@ -117,7 +133,6 @@ def word_signatures(cur, features_list):
     # The feature is if the word start with upper case letter.
     elif cur[0].isupper():
         features_list.append('start_upper=true')
-
 
 
 if __name__ == "__main__":

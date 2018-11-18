@@ -25,11 +25,10 @@ def greedy_tag_word(x, t1, t2, dic_e, dic_q, pos_list):
     if x not in dic_e.keys():
         x = MLETrain.find_word_signature(x)
     # if word is unknown tag it as UNK
-    if x == 'UNK' or x == 'CD':
-        if x == 'UNK':
-            return 'UNK'
-        else:
-            return 'CD'
+    if x == 'UNK':
+        return 'UNK'
+    elif x == 'CD':
+        return 'CD'
 
     for pos in pos_list:
         if pos in dic_e[x].keys():  # first check if the given word could be pos (if you've seen it before)
@@ -46,22 +45,23 @@ def greedy_tag_word(x, t1, t2, dic_e, dic_q, pos_list):
 
 def main():
     # arguments are: input_file_name, q.mle, e.mle, out_file_name, extra_file_name
-    inp_file_path = sys.argv[1]
-    q_mle_file = sys.argv[2]
-    e_mle_file = sys.argv[3]
-    out_file_name = sys.argv[4]
-    extra_file = sys.argv[5]
-
+    #inp_file_path = sys.argv[1]
+    #q_mle_file = sys.argv[2]
+    #e_mle_file = sys.argv[3]
+    #out_file_name = sys.argv[4]
+    #extra_file = sys.argv[5]
+    ########################################
+    inp_file_path = "ass1-tagger-test-input"
+    q_mle_file = "q_file.txt"
+    e_mle_file = "e_file.txt"
+    out_file_name = "output.txt"
+    extra_file = "extra_file_name.txt"
+    ########################################
     pos_list = Utility.read_possible_poses_from_file(extra_file)
     dic_q = Utility.generate_q_dic_from_file(q_mle_file)
     dic_e = Utility.generate_e_dic_from_file(e_mle_file)
-
     out_file = open(out_file_name, "a")
-
-    # prev_tag = ""  # none
-    # pprev_tag = ""  # none
-
-    mletrain.load_the_model(sys.argv[2], sys.argv[3])
+    mletrain.load_the_model(q_mle_file, e_mle_file)
 
     inp_file = open(inp_file_path, "r")
     lines = inp_file.readlines()  # In order to go over the lines in input file.
@@ -72,22 +72,13 @@ def main():
         pprev_tag = ''  # none
 
         # split the sentence
-        # re.split(MLETrain.punctuation_marks, line)...... # split....
-        # split() without removing the delimiter
-
-        # # split line to words by any punctuation except "."
-        # pattern_to_split = re.compile(r'(\s+|[{}])'.format(re.escape(r"""!"#$%&'()*+,-/:;<=>?@[\]^_`{|}~""")))
-        # words = pattern_to_split.split(line)
-        # for word in words:  # clean the " " from the words list
-        #     if word == " ":
-        #         words.remove(word)
-        # # now we are free to work over words list
         words = line.split("\n")[0].split(" ")
-
         for i in range(words.__len__()):
-            cur_word_tag = greedy_tag_word(words[i], pprev_tag, prev_tag, dic_e, dic_q, pos_list)
-            if (i == words.__len__() - 1):  # if last word
-                # if its the last word, first split to word and . (if possible)
+            cur_word_tag = greedy_tag_word(words[i], pprev_tag, prev_tag,
+                                           dic_e, dic_q, pos_list)
+            # If last word
+            if (i == words.__len__() - 1):
+                # If its the last word, first split to word and . (if possible)
                 # then tag each of them and write to file. doesn't write the space at end of a line
                 pattern = re.compile(r'(\s+|[{}])'.format(re.escape(".")))
                 t = [part for part in pattern.split(words[i]) if part.strip()]
@@ -96,16 +87,18 @@ def main():
                     out_file.write(t[0] + "/" + t0_tag + " ")
                     t1_tag = greedy_tag_word(t[1], prev_tag, t0_tag, dic_e, dic_q, pos_list)
                     out_file.write(t[1] + "/" + t1_tag)
-                else:  # last word is regular word...
+                # Last word is regular word...
+                else:
                     out_file.write(t[0] + "/" + cur_word_tag)
-            else:  # regular word in sentence (not last)
+            # Regular word in sentence (not last)
+            else:
                 out_file.write(words[i] + "/" + cur_word_tag + " ")
 
-            # update pprev and prev tag for next iteration...
+            # Update pprev and prev tag for next iteration...
             pprev_tag = prev_tag
             prev_tag = cur_word_tag
-
     out_file.close()
 
 
-main()
+if __name__ == "__main__":
+    main()

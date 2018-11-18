@@ -15,8 +15,6 @@ def start():
     #mletrain.load_the_model(sys.argv[2], sys.argv[3])
     ####################################################
     tag_set, words_dic = mletrain.load_the_model("q_file.txt", "e_file.txt")
-    e_dic = mletrain.e_dic
-    q_dic = mletrain.q_dic
     lines = tagger_test_input.readlines()
     num_words = 0
     incorrect = 0 #########
