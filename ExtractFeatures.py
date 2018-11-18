@@ -10,7 +10,7 @@ def start():
 
     for words, pos in data:
         for i, word in enumerate(words):
-            features_list = create_features_list(words, pos, word, i)
+            features_list = create_features_list(words, pos, word, i, words_dic[word])
             features_string = " ".join([feature for feature in features_list])
             features_file.write(pos[i] + " " + features_string + "\n")
     corpus_file.close()
@@ -49,7 +49,7 @@ def extract_features(corpus_file):
     return data, words_dic
 
 
-def create_features_list(words, pos, cur, i):
+def create_features_list(words, pos, cur, i, rar_word):
     features_list = []
     # The feature is form=word
     form = "form=" + cur
@@ -84,18 +84,24 @@ def create_features_list(words, pos, cur, i):
         nnext_word = "nnext_word=" + words[i + 2]
         features_list.append(nnext_word)
 
-    # Find more signatures.
-    word_signatures(cur, features_list)
+    # Find more signatures for rar words.
+    if rar_word == 1:
+        word_signatures(cur, features_list)
 
     return features_list
 
 
 def word_signatures(cur, features_list):
-    # The feature is 2-suffix and 3-suffix.
+    # The feature is 2, 3 and 4-suffix, and also 2, 3 and 4-prefix.
     if len(cur) > 2 and cur[len(cur) - 1] != '.':
         if len(cur) > 3:
+            if len(cur) > 4:
+                features_list.append('4_suffix''=' + cur[-4:])
+                features_list.append('4_prefix''=' + cur[:4])
             features_list.append('3_suffix''=' + cur[-3:])
+            features_list.append('3_prefix''=' + cur[:3])
         features_list.append('2_suffix''=' + cur[-2:])
+        features_list.append('2_prefix''=' + cur[:2])
     # The feature is if the word has '-'
     if '-' in cur:
         features_list.append('contains_hyphen=true')
