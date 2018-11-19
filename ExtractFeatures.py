@@ -1,8 +1,10 @@
 import sys
-
-
+import MLETrain as mletrain
+END = 'end'
+START = 'start'
 punctuation_marks = ['.', ',', '"', '``', '(', ')', '=', '-', '!', '@', '#', '?',
                      '$', '%', '&', '*', '+', '{', '}', '\'\'', ':', '...', ';', '--']
+
 
 def start():
     corpus_file  = open(sys.argv[1])
@@ -23,6 +25,7 @@ def start():
 def extract_features(corpus_file):
     words_dic = {}
     data = []
+    pos_dic = {}
     # Move on the lines in the corpus file.
     lines = corpus_file.readlines()
     for line in lines:
@@ -36,6 +39,8 @@ def extract_features(corpus_file):
             word = by_slash[0]
             if len(by_slash) == 2:
                 pos_ = by_slash[1]
+                if pos_ not in pos_dic.keys():
+                    pos_dic[pos_] = ' '
                 if (not pos_.isupper()) and pos not in punctuation_marks:
                     break
                 # Words is a array of the all file words, and pos is a array of all the POS.
@@ -55,6 +60,14 @@ def extract_features(corpus_file):
         # Append to data the pair of words and POS for every line in the corpus.
         data.append((words, pos))
     corpus_file.close()
+    try:
+        pos_file = open("pos_file")
+        pos_file.close()
+    except:
+        pos_file = open("pos_file", "a")
+        for pos in pos_dic.keys():
+            pos_file.write(pos + "\n")
+        pos_file.close()
     return data, words_dic
 
 
@@ -71,34 +84,34 @@ def create_features_list(words, pos, cur, i, rar_word):
     form = "form=" + cur
     features_list.append(form)
     if len(pos) != 0:
+        tag = "tag=" + (pos[i])
+        features_list.append(tag)
         # The feature is prev_tag=prev_POS
-        prev_tag = "prev_tag=" + (pos[i - 1] if i != 0 else 'start')
+        prev_tag = "prev_tag=" + (pos[i - 1] if i != 0 else START)
         features_list.append(prev_tag)
 
         # The feature is prev_prev_tag=prev_prev_POS
         if i > 1:
             pprev_tag = "pprev_tag=" + pos[i - 1] + "+" + pos[i - 2]
         else:
-            pprev_tag = "pprev_tag=start+prev_tag=" + (pos[i - 1] if i == 1 else 'start')
+            pprev_tag = "pprev_tag=start+prev_tag=" + (pos[i - 1] if i == 1 else START)
         features_list.append(pprev_tag)
 
     # The feature is prev_word
-    prev_word = "prev_word=" + (words[i - 1] if i > 0 else 'start')
+    prev_word = "prev_word=" + (words[i - 1] if i > 0 else START)
     features_list.append(prev_word)
 
     # The feature is prev_prev_word=pprev_word
-    pprev_word = "pprev_word=" + (words[i - 2] if i > 1 else 'start')
+    pprev_word = "pprev_word=" + (words[i - 2] if i > 1 else START)
     features_list.append(pprev_word)
 
     # The feature is next_word
-    if i < len(words) - 1:
-        next_word = "next_word=" + words[i + 1]
-        features_list.append(next_word)
+    next_word = "next_word=" + (words[i + 1] if i < len(words) - 1 else END)
+    features_list.append(next_word)
 
     # The feature is next_next_word=nnext_word
-    if i < len(words) - 2:
-        nnext_word = "nnext_word=" + words[i + 2]
-        features_list.append(nnext_word)
+    nnext_word = "nnext_word=" + (words[i + 2] if i < len(words) - 2 else END)
+    features_list.append(nnext_word)
 
     # Find more signatures for rar words.
     if rar_word == 1:

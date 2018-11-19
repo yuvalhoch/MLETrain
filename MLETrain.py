@@ -7,7 +7,7 @@ q_dic = {}
 pos_count_dic = {}
 suffix_dic = {}
 word_signature = ['ing', 'ed', '\'s', 'n\'t', 'hood', 'ist', 'ness', 'able', 'ible',
-                  'en', 'ic', 'ish', 'less', 'ly', 'tial', 'er']
+                  'en', 'ic', 'ish', 'less', 'ly', 'tial', 'er', 's']
 punctuation_marks = ['.', ',', '"', '``', '(', ')', '=', '-', '!', '@', '#', '?',
                      '$', '%', '&', '*', '+', '{', '}', '\'\'', ':', '...', ';', '--']
 
