@@ -50,3 +50,10 @@ def read_possible_poses_from_file(pos_file_path):
         line = line.replace("\n", "")
         pos_list.append(line)
     return pos_list
+
+
+# pos file is file which contain all the possible POSes. each line contains a pos.
+def write_pos_file(pos_file, pos_count_dic):
+    for pos in pos_count_dic.keys():
+        pos_file.write(pos + "\n")
+    pos_file.close()
