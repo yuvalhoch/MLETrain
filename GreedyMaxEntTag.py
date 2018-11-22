@@ -28,27 +28,6 @@ def greedy_tag_word(num_to_pos_dic, features_set_to_on_list, llb):
     # convert maximizer_index to actual pos
     return num_to_pos_dic[maximizer_index]  # return pos
 
-# def greedy_tag_word(num_to_pos_dic, features_set_to_on_list, llb):
-#     # llb.predict needs features_set_to_on_list, returns list contains probabilities for each tag, such that
-#     # [ 0.3,0.5,0,1 ] means that probability for tag #2 is 0.5
-#     # caution!!! remember that tag to pos starts to count from 1
-#     # [while list indexes starting to count from 0!
-#     # therefore we will calc using num_to_pos_dic[maximizer_index_of_predict+1]]
-#     # ***or in this case set index counter in enumerate to start from 1!***
-#
-#     maximizer_index = 0
-#     max_tag_prob = 0
-#
-#     tag_porb_list = llb.predict(features_set_to_on_list)  # calcs using the model
-#     # update tag to hold the index which maximize prob
-#     for index, prob_of_tag in enumerate(tag_porb_list, 1):
-#         cur_tag_porb = prob_of_tag
-#         if cur_tag_porb > max_tag_prob:
-#             max_tag_prob = cur_tag_porb
-#             maximizer_index = index  # tag index in the list, counting from 1!
-#
-#     # convert maximizer_index to actual pos
-#     return num_to_pos_dic[maximizer_index]  # return pos
 
 def main():
     if len(sys.argv) != 5:
@@ -118,38 +97,6 @@ def main():
             pprev_tag = prev_tag
             prev_tag = cur_word_tag
 
-        # for word in words:
-        #     # build features, greedy tag and write to "out" file
-        #     add_to_feature_set_to_on_list(features_to_num_dic["form=" + word],features_set_to_on_list
-        #     features_to_num_dic["prev_word=" + prev_word]
-        #     features_to_num_dic["prev_tag=" + prev_tag]
-        #     features_to_num_dic["pprev_word=" + pprev_word]
-        #     features_to_num_dic["pprev_tag=" + pprev_tag]
-        #     features_to_num_dic["next_word=" + next_word]
-        #     features_to_num_dic["nnext_word=" + nnext_word]
-        #
-        #     if count_word_appearance_dic[word] == 1:  # if word appears only once in the text
-        #         calc_features_using_word_signatures(word, feature_vec)
-        #
-        #     pprev_tag = prev_tag
-        #     prev_tag = cur_word_tag
-        #
-        # # in the begging of each sentence reset the prev and pprev tag to none
-        # prev_tag = ''  # none
-        # pprev_tag = ''  # none
-        #
-        # # split the sentence
-        # features = line[1:].split(" ")
-        # for feature in features:
-        #     feature.strip(":1")
-        #
-        # # features stands for word features
-        # cur_word_tag_index = greedy_tag_word(features, llb)
-        # cur_word_tag = pos_list[cur_word_tag_index]
-        # if (word.endswith("\n")):
-        #     out_file.write(word.strip("\n") + "/" + cur_word_tag + "\n")
-        # else:
-        #     out_file.write(word + "/" + cur_word_tag + " ")
     out_file.close()
 
 
