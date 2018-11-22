@@ -1,9 +1,11 @@
 import sys
 import json
+import MEMMUtils
 
 
 def convert_features_to_feature_vec(features_file, feature_vec_file, feature_to_feature_num_map_file):
-    pos_to_num_dic = read_poses_number("pos_file")
+    # create pos_to_num_dic from file
+    pos_to_num_dic = MEMMUtils.create_pos_to_num_dic("pos_file")
 
     features_to_num_dic = {}  # features_to_num_dic[feature] = feature number.
     # exp: features_to_num_dic["pprev_word=Chicago"] = 108
@@ -34,17 +36,6 @@ def convert_features_to_feature_vec(features_file, feature_vec_file, feature_to_
     # write features_to_num_dic to "feature_to_feature_num_map" file (using json for convenience)
     with open(feature_to_feature_num_map_file, 'w') as file:
         file.write(json.dumps(features_to_num_dic))  # use `json.loads` to do the reverse
-
-
-# reads poses file, creates dic from pos to line number and returns it, exp: dic[pos] = (line # which contains pos)
-def read_poses_number(pos_file_path):
-    pos_to_num_dic = {}
-    pos_file = open(pos_file_path, "r")
-    lines = pos_file.readlines()  # In order to go over the lines in pos_file.
-    for counter, line in enumerate(lines, 1):
-        pos_to_num_dic[line.replace("\n","")] = counter
-    pos_file.close()
-    return pos_to_num_dic
 
 
 # receives map, feature and number adds the feature to map exp: map[feature] = number

@@ -1,19 +1,29 @@
 import sys
 import math
 import MLETrain as mletrain
+import liblin as lbln
+import json
+import MEMMUtils as MemmUtil
 
 
 def start():
-    tagger_test_input = open("ass1-tagger-test-input")
-    #tagger_test_input = open("try")
-    tagger_test = open("ass1-tagger-test") #############
-    output_file = open("output.txt", "a")
-    ####################################################
-    #tagger_test_input = open(sys.argv[1])
-    #output_file_name = open(sys.argv[3])
-    #extra_file = open(sys.argv[4]) #### optional
-    #mletrain.load_the_model(sys.argv[2], sys.argv[3])
-    ####################################################
+    if len(sys.argv) != 5:
+        print ("bad parameters!")
+        exit(1)
+
+    tagger_test_input = open(sys.argv[1], "r")
+    tagger_test = open("ass1-tagger-test")
+    llb = lbln.LiblinearLogregPredictor(sys.argv[2])
+    with open(sys.argv[3], 'r') as f:
+        features_to_num_dic = json.load(f)
+        # features_to_num_dic[feature] = feature number.
+        # exp: features_to_num_dic["pprev_word=Chicago"] = 108
+    output_file = open(sys.argv[4], "a")
+
+
+
+
+
     tag_set, words_dic = mletrain.load_the_model("q_file.txt", "e_file.txt")
     lines = tagger_test_input.readlines()
     num_words = 0
@@ -23,7 +33,7 @@ def start():
         word = line.split("\n")[0].split(" ")
         word_test = line_test.split("\n")[0].split(" ") ###############
         num_words += len(word)
-        score = viterbi(word, words_dic)
+        score = viterbi(word, words_dic, features_to_num_dic, llb)
 
         for i in range(0, len(word_test)): ################
             word1 = word_test[i]
@@ -43,7 +53,7 @@ def start():
     tagger_test_input.close()
 
 
-def viterbi(word_seq, words_dic):
+def viterbi(word_seq, words_dic, features_to_num_dic, llb):
     prob_values = [{('', ''): 0.0}]
     back_pointers = []
     for i, word in enumerate(word_seq):
@@ -64,7 +74,7 @@ def viterbi(word_seq, words_dic):
                 # Move on the optional tags and get for every one of them the score
                 # by calculating the log probability of e and q values.
                 for r in available_tags:
-                    prob_ = get_score(word, r, t, t_tag)
+                    prob_ = get_score(word, r, t, t_tag, word_seq, features_to_num_dic, llb, i)
                     score = prob_values[i][(t_tag, t)] + prob_
                     # Update the scores by the max score of (t, r).
                     if ((t, r) not in prob) or score > prob[(t, r)]:
@@ -99,12 +109,29 @@ def viterbi(word_seq, words_dic):
     return list(reversed(y_seq))
 
 
-def get_score(word, cur_tag, prev_tag, pprev_tag, prev_word, pprev_word, next_word, nnext_word):
+# find & returns probability of given tag (cur_tag)
+def get_score(word, cur_tag, prev_tag, pprev_tag, words, features_to_num_dic, llb, word_idx_in_words):
+    # build features, returns list with all the features which are set to 1 in feature_vec & actual word
+    features_set_to_on_list, word = MemmUtil.build_features(features_to_num_dic, word_idx_in_words, pprev_tag, prev_tag, words)
 
-    prob = float("-inf")
-    if not (e_val == 0 or q_val == 0):
-        prob = math.log10(e_val) + math.log10(q_val)
-    return prob
+    # create pos_to_num_dic from file
+    pos_to_num_dic = MemmUtil.create_pos_to_num_dic("pos_file")
+
+    # convert pos to label_num
+    if cur_tag in pos_to_num_dic.keys():
+        label_num = pos_to_num_dic[cur_tag]
+    else:
+        label_num = 5  # arbitary!
+
+    # calculate probabilities for each label
+    tag_porb_dic = llb.predict(features_set_to_on_list)  # calcs using the model
+
+    # find the probability for cur_tag (label)
+    cur_tag_porb = float("-inf")
+    cur_tag_porb = tag_porb_dic[str(label_num)]
+
+    # return probability for cur_tag (label)
+    return cur_tag_porb
 
 
 if __name__ == "__main__":
